@@ -4,6 +4,8 @@ namespace HPT;
 
 class HPTGrabber implements Grabber
 {
+    private array $productCache = [];
+
     private function getProductSearchUrl(string $productCode): string
     {
         return "https://www.czc.cz/" . $productCode . "/hledat";
@@ -49,18 +51,29 @@ class HPTGrabber implements Grabber
         return $xpath;
     }
 
-    private function findProduct(string $productId) : ?\DOMXPath {
+    private function findProduct(string $productId): ?\DOMXPath
+    {
+        if (array_key_exists($productId, $this->productCache)) {
+            return $this->productCache[$productId];
+        }
+
         $url = $this->getProductSearchUrl($productId);
         $xpath = $this->getDOMPage($url);
-        if($xpath === null)
+
+        if ($xpath === null) {
             return null;
+        }
+
         $productsNodeList = $xpath->query('//a[@class="tile-link"]');
         if ($productsNodeList) {
             foreach ($productsNodeList as $productNode) {
                 $url = (string)$productNode->getAttribute("href");
-                return $this->getProduct($productId, $url);
+                $product = $this->getProduct($productId, $url);
+                $this->productCache[$productId] = $product;
+                return $product;
             }
         }
+
         return null;
     }
 
@@ -73,6 +86,28 @@ class HPTGrabber implements Grabber
         if ($priceNodeList->length > 0) {
             $price = $priceNodeList->item(0)->textContent;
             return floatval(str_replace(array('&nbsp;', 'Kč', ' ', '.', ','), '', htmlentities($price)));
+        }
+        return null;
+    }
+
+    public function getName(string $productId): ?string {
+        $xpath = $this->findProduct($productId);
+        if($xpath === null)
+            return null;
+        $nameNodeList = $xpath->query('//div[@class="pd-wrap"]/h1');
+        if ($nameNodeList->length > 0) {
+            return trim($nameNodeList->item(0)->textContent);
+        }
+        return null;
+    }
+    public function getRating(string $productId) : ?float {
+        $xpath = $this->findProduct($productId);
+        if($xpath === null)
+            return null;
+        $ratingNodeList = $xpath->query('//*[@id="product-detail"]/div[2]/div[1]/span');
+        if ($ratingNodeList->length > 0) {
+            $rating = $ratingNodeList->item(0)->textContent;
+            return floatval(str_replace(array('&nbsp;', '%', ' '), '', htmlentities($rating)));
         }
         return null;
     }

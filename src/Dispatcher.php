@@ -41,7 +41,9 @@ class Dispatcher
             $codes = $this->readInputFile();
             foreach ($codes as $code) {
                 $price = $this->grabber->getPrice($code);
-                $this->output->addProduct($price, $code);
+                $name = $this->grabber->getName($code);
+                $rating = $this->grabber->getRating($code);
+                $this->output->addProduct($code, $price, $name, $rating);
             }
         } catch (Exception $e) {
             echo "An error occurred: " . $e->getMessage();
