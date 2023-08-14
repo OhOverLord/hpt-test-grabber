@@ -6,5 +6,6 @@ namespace HPT;
 
 interface Grabber
 {
-    public function getPrice(string $productId): float;
+    public function getPrice(string $productId): ?float;
 }
+

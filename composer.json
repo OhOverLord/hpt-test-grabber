@@ -1,0 +1,20 @@
+{
+    "name": "ohoverlord/hpt-test-grabber",
+    "autoload": {
+        "psr-4": {
+            "HPT\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Leonid Filippov",
+            "email": "leonid.filippov@hptronic.cz"
+        }
+    ],
+    "require": {
+      "ext-curl": "*",
+        "ext-libxml": "*",
+        "ext-dom": "*",
+        "ext-json": "*"
+    }
+}
